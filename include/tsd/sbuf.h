@@ -70,6 +70,7 @@ int		 sbuf_vprintf(struct sbuf *, const char *, va_list)
 	__attribute__((__format__ (__printf__, 2, 0)));
 #endif
 int		 sbuf_putc(struct sbuf *, int);
+int		 sbuf_read(struct sbuf *, int, size_t);
 int		 sbuf_trim(struct sbuf *);
 int		 sbuf_error(const struct sbuf *);
 int		 sbuf_finish(struct sbuf *);

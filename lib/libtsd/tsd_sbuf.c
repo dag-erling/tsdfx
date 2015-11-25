@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <tsd/sbuf.h>
 
@@ -437,6 +438,36 @@ sbuf_putc(struct sbuf *s, int c)
 	sbuf_put_byte(s, c);
 	if (s->s_error != 0)
 		return (-1);
+	return (0);
+}
+
+/*
+ * Read from a file descriptor into an sbuf.
+ */
+int
+sbuf_read(struct sbuf *s, int fd, size_t max)
+{
+	size_t inc;
+	ssize_t rlen;
+
+	assert_sbuf_integrity(s);
+	assert_sbuf_state(s, 0);
+
+	while (max > 0) {
+		inc = max > 1024 ? 1024 : max;
+		if (sbuf_extend(s, inc) != 0)
+			inc = max = SBUF_FREESPACE(s);
+		if ((rlen = read(fd, s->s_buf + s->s_len, inc)) == -1) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return (0);
+			return (-1);
+		}
+		if (rlen == 0)
+			return (0);
+		assert((size_t)rlen <= max);
+		s->s_len += (size_t)rlen;
+		max -= (size_t)rlen;
+	}
 	return (0);
 }
 
