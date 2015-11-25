@@ -33,6 +33,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,14 +137,16 @@ sbuf_extendsize(int size)
  * Extend an sbuf.
  */
 static int
-sbuf_extend(struct sbuf *s, int addlen)
+sbuf_extend(struct sbuf *s, size_t addlen)
 {
 	char *newbuf;
-	int newsize;
+	size_t newsize;
 
 	if (!SBUF_CANEXTEND(s))
 		return (-1);
 	newsize = sbuf_extendsize(s->s_size + addlen);
+	if (newsize > SSIZE_MAX)
+		return (-1);
 	newbuf = SBMALLOC(newsize);
 	if (newbuf == NULL)
 		return (-1);
@@ -239,19 +242,17 @@ sbuf_clear(struct sbuf *s)
  * Effectively truncates the sbuf at the new position.
  */
 int
-sbuf_setpos(struct sbuf *s, ssize_t pos)
+sbuf_setpos(struct sbuf *s, size_t pos)
 {
 
 	assert_sbuf_integrity(s);
 	assert_sbuf_state(s, 0);
 
-	KASSERT(pos >= 0,
-	    ("attempt to seek to a negative position (%jd)", (intmax_t)pos));
 	KASSERT(pos < s->s_size,
-	    ("attempt to seek past end of sbuf (%jd >= %jd)",
-	    (intmax_t)pos, (intmax_t)s->s_size));
+	    ("attempt to seek past end of sbuf (%zu >= %zu)",
+	    pos, s->s_size));
 
-	if (pos < 0 || pos > s->s_len)
+	if (pos > s->s_len)
 		return (-1);
 	s->s_len = pos;
 	return (0);
@@ -358,7 +359,7 @@ int
 sbuf_vprintf(struct sbuf *s, const char *fmt, va_list ap)
 {
 	va_list ap_copy;
-	int len;
+	size_t len;
 
 	assert_sbuf_integrity(s);
 	assert_sbuf_state(s, 0);

@@ -37,8 +37,8 @@ struct sbuf {
 #define SBUF_MAGIC	0x4a82dd8a
 	char		*s_buf;		/* storage buffer */
 	int		 s_error;	/* current error code */
-	ssize_t		 s_size;	/* size of storage buffer */
-	ssize_t		 s_len;		/* current length of string */
+	size_t		 s_size;	/* size of storage buffer */
+	size_t		 s_len;		/* current length of string */
 #define	SBUF_FIXEDLEN	0x00000000	/* fixed length buffer (default) */
 #define	SBUF_AUTOEXTEND	0x00000001	/* automatically extend buffer */
 #define	SBUF_USRFLAGMSK	0x0000ffff	/* mask of flags the user may specify */
@@ -58,7 +58,7 @@ struct sbuf	*sbuf_new(struct sbuf *, char *, int, int);
 #define		 sbuf_new_auto()				\
 	sbuf_new(NULL, NULL, 0, SBUF_AUTOEXTEND)
 void		 sbuf_clear(struct sbuf *);
-int		 sbuf_setpos(struct sbuf *, ssize_t);
+int		 sbuf_setpos(struct sbuf *, size_t);
 int		 sbuf_bcat(struct sbuf *, const void *, size_t);
 int		 sbuf_bcpy(struct sbuf *, const void *, size_t);
 int		 sbuf_cat(struct sbuf *, const char *);
