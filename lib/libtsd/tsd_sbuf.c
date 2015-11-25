@@ -260,6 +260,37 @@ sbuf_setpos(struct sbuf *s, size_t pos)
 }
 
 /*
+ * Discard an arbitrary number of characters from the beginning of the
+ * buffer.
+ *
+ * This could be done more efficiently if we had a base pointer which we
+ * could simply increment, and postpone the memmove() until the next
+ * sbuf_extend() or sbuf_finish() call.  However, that would increase the
+ * complexity of other, more commonly used functions.
+ */
+int
+sbuf_advance(struct sbuf *s, size_t skip)
+{
+
+	assert_sbuf_integrity(s);
+	assert_sbuf_state(s, 0);
+
+	KASSERT(skip < s->s_size,
+	    ("attempt to seek past end of sbuf (%zu >= %zu)",
+	    skip, s->s_size));
+
+	if (skip == 0)
+		return (0);
+	if (skip < s->s_len) {
+		memmove(s->s_buf, s->s_buf + skip, s->s_len - skip);
+		s->s_len -= skip;
+	} else {
+		s->s_len = 0;
+	}
+	return (0);
+}
+
+/*
  * Append a byte to an sbuf.  This is the core function for appending
  * to an sbuf and is the main place that deals with extending the
  * buffer and marking overflow.

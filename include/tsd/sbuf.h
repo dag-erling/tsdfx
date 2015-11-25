@@ -59,6 +59,7 @@ struct sbuf	*sbuf_new(struct sbuf *, char *, int, int);
 	sbuf_new(NULL, NULL, 0, SBUF_AUTOEXTEND)
 void		 sbuf_clear(struct sbuf *);
 int		 sbuf_setpos(struct sbuf *, size_t);
+int		 sbuf_advance(struct sbuf *, size_t);
 int		 sbuf_bcat(struct sbuf *, const void *, size_t);
 int		 sbuf_bcpy(struct sbuf *, const void *, size_t);
 int		 sbuf_cat(struct sbuf *, const char *);
